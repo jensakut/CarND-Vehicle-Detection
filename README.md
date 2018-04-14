@@ -377,8 +377,8 @@ The output of the pipeline is shown in the following visualization:
 Here's a [link to my video result](./output_videos/project_video.mp4)
 
 It may be found on Youtube: 
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=trcdcDSJp9o
-" target="_blank"><img src="http://img.youtube.com/vi/trcdcDSJp9o/0.jpg" 
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=ID8P9ivLqn4
+" target="_blank"><img src="http://img.youtube.com/vi/ID8P9ivLqn4/0.jpg" 
 alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
 
 #### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
