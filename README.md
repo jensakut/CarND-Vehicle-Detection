@@ -17,7 +17,7 @@ The goals / steps of this project are the following:
 [image1]: ./output_images/dataset.png
 [image2]: ./output_images/spatial.png
 [image3]: ./output_images/HOG.png
-[image4]: ./output_images/windows.png
+[image4]: ./output_images/grid.png
 [image5]: ./output_images/pipeline_boxes.jpg
 [image6]: ./output_images/pipeline_results_green.jpg
 [image7]: ./output_images/pipeline_labels.jpg
@@ -191,15 +191,13 @@ First, the combinations of color-spaces are being evaluated. Some colorspaces pr
 | LAB | 0 | 9 | 8 | 2 | 1764 | 59.36 | 21.36 | 0.0025 | 0.9229 |
 
 Judging by these results, the following combinations are chosen to be of interest: 
-|Colorspace|HOG-Channel|
-|----------|------------|
-|HSV | ALL|
-|HLS | ALL|
-|YCrCb | ALL| 
-|LAB | 0|
-|YCrCB | 0|  
-|YCrCB | 1|
-|YUV | 1|
+* HSV, ALL
+* HLS, ALL
+* YCrCb, ALL 
+* LAB, 0
+* YCrCB, 0  
+* YCrCB, 1
+* YUV, 1
 
 A quick evaluation of 500 samples each provided these results: 
 
@@ -323,7 +321,7 @@ cell_per_block = 2 # HOG cells per block
 
 spatial_feat = True # Spatial features on or off
 hist_feat = True#Histogram features on or off
-hog_feat = True # HOG features on or off
+hog_feat = True #HOG features on or off
 ```
 
 I trained a linear SVM using the parameter-search function GridSearchCV. Thus, I changed parameters to kernel = rbf and C = 5. 
@@ -347,15 +345,16 @@ I trained a linear SVM using the parameter-search function GridSearchCV. Thus, I
 #### 1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
 The sliding windows were implemented in this code. The smallest windows are supposed to scan the smaller 64x64 pixel images search for distant cars. To save some computational effort, the x-range is limited. The medium-sized pixels search a wider area, and the biggest 128x128 windows cover the lower half of the screen up to the car's hood. 
+The white car moving away slowly from the camera demonstrates the grid very precisely. In order to improve the car's tracking, the overlap is increased from 0.5 to 0.75. Now, the pipeline runs smoother. 
 
 ```python
     def slide_windows(self, shape):
         self.slide_window(shape, x_start_stop=[250,1030], y_start_stop=[400,500], 
-                    xy_window=(64, 64), xy_overlap=(0.5, 0.5))  
+                    xy_window=(64, 64), xy_overlap=(0.75, 0.75))  
         self.slide_window(shape, x_start_stop=[None,None], y_start_stop=[400,500], 
-                    xy_window=(96, 96), xy_overlap=(0.5, 0.5))
+                    xy_window=(96, 96), xy_overlap=(0.75, 0.75))
         self.slide_window(shape, x_start_stop=[None, None], y_start_stop=[450,600], 
-                     xy_window=(128, 128), xy_overlap=(0.6, 0.6))
+                     xy_window=(128, 128), xy_overlap=(0.5, 0.5))
         print('search_windows: ',len(self.window_list))
 ```
 
@@ -363,7 +362,7 @@ The sliding windows were implemented in this code. The smallest windows are supp
 
 #### 2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
-The output of the pipeline is shown in the following visualization: 
+The output of the pipeline is shown in the following visualization. The pictures 7 and 8 are additional examples which proved to be difficult to calculate. Number 7 shows the limit of the search grid, because the car is just inbetween the grid, and number 8 includes difficult shadows.  
 
 ![alt text][image5]
 
@@ -377,8 +376,8 @@ The output of the pipeline is shown in the following visualization:
 Here's a [link to my video result](./output_videos/project_video.mp4)
 
 It may be found on Youtube: 
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=ID8P9ivLqn4
-" target="_blank"><img src="http://img.youtube.com/vi/ID8P9ivLqn4/0.jpg" 
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=f2ZAZ74N1o4
+" target="_blank"><img src="http://img.youtube.com/vi/f2ZAZ74N1o4/0.jpg" 
 alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
 
 #### 2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
@@ -418,10 +417,10 @@ I recorded the positions of positive detections in each frame of the video.  Fro
 ### Discussion
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
-It is possible to improve the classifier by additional data augmentation, hard negative mining, classifier parameters tuning etc.
-I guess the pipeline is relatively unstable against weather, reflection, shadows, or tight roads. 
-The part of the picture which need to be searched is relatively small. Searching the image where cars appear and then searching around their last known position might improve the algorithm a lot. A kalman-filter may be introduced to track vehicles even if cars are overlapping each other. 
-The saved data points may be invested into a higher framerate. 
- It will be interesting to use the pipeline on a homemade video. 
-I guess a neural net may perform better at extracting the features. Yet, comparing the colorspaces and the parameters was quite interesting. It may be interesting whether this parametersearch is relevant for a neural net, because the computational effort of training a svm is considerably less. 
+* It is possible to improve the classifier by additional data augmentation, hard negative mining, classifier parameters tuning etc.
+* I guess the pipeline is relatively unstable against weather, reflection, shadows, or tight roads. 
+* The searchgrid is relatively rough. Searching the image where cars usually appear, eg. right and left, and in the horizon, and then searching around their last known position might improve the algorithm a lot. It focuses datapoints where it is necessary. A kalman-filter may be introduced to track vehicles in order to stabilize tracking. 
+* The saved data points may be invested into a higher framerate. Right now, the rough grid still ensures 2-3 fps, which is relatively slow
+* It will be interesting to use the pipeline on a homemade video to see how it generalizes
+* I guess a neural net may perform better at extracting the features. Yet, comparing the colorspaces and the parameters was quite interesting. It may be interesting whether this parametersearch is relevant for a neural net, because the computational effort of training a svm is considerably less. 
 
